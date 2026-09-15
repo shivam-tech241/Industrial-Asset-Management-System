@@ -26,7 +26,11 @@ class FaultReportBase(BaseModel):
 
 
 class FaultReportCreate(FaultReportBase):
-    pass
+    reported_by: Optional[int] = None
+
+
+class FaultReportStatusUpdate(BaseModel):
+    status: FaultStatus
 
 
 class FaultReportUpdate(BaseModel):

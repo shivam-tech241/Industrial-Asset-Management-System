@@ -16,6 +16,7 @@ from app.schemas.fault_report import (
     FaultStatus,
     FaultReportBase,
     FaultReportCreate,
+    FaultReportStatusUpdate,
     FaultReportUpdate,
     FaultReportOut,
 )
@@ -54,6 +55,7 @@ __all__ = [
     "FaultStatus",
     "FaultReportBase",
     "FaultReportCreate",
+    "FaultReportStatusUpdate",
     "FaultReportUpdate",
     "FaultReportOut",
     "LoginRequest",
