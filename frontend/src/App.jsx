@@ -10,6 +10,9 @@ import Departments from './pages/Departments';
 import FaultReports from './pages/FaultReports';
 import MaintenanceLogs from './pages/MaintenanceLogs';
 import AssetCategories from './pages/AssetCategories';
+// ===== SECTIONS-STANDALONE-PAGE-START =====
+import Sections from './pages/Sections';
+// ===== SECTIONS-STANDALONE-PAGE-END =====
 
 function App() {
   return (
@@ -34,6 +37,9 @@ function App() {
             <Route path="assets" element={<Assets />} />
             <Route path="asset-categories" element={<AssetCategories />} />
             <Route path="departments" element={<Departments />} />
+            {/* ===== SECTIONS-STANDALONE-PAGE-START ===== */}
+            <Route path="sections" element={<Sections />} />
+            {/* ===== SECTIONS-STANDALONE-PAGE-END ===== */}
             <Route path="maintenance-logs" element={<MaintenanceLogs />} />
             <Route path="fault-reports" element={<FaultReports />} />
           </Route>

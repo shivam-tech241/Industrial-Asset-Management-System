@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -184,6 +185,13 @@ def delete_asset(
             detail="Asset not found",
         )
 
-    db.delete(asset)
-    db.commit()
+    try:
+        db.delete(asset)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete asset because related records (maintenance logs or fault reports) exist.",
+        )
     return {"message": "Asset deleted successfully"}

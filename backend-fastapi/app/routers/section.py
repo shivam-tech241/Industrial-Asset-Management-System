@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
 from app.models.section import Section
@@ -107,6 +108,13 @@ def delete_section(
             detail="Section not found",
         )
 
-    db.delete(section)
-    db.commit()
+    try:
+        db.delete(section)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete section: associated assets still exist",
+        )
     return {"message": "Section deleted successfully"}

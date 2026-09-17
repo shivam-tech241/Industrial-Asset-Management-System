@@ -1,6 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
 from app.models.department import Department
@@ -98,6 +99,13 @@ def delete_department(
             detail="Department not found",
         )
 
-    db.delete(dept)
-    db.commit()
+    try:
+        db.delete(dept)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete department: associated sections, assets, or users still exist",
+        )
     return {"message": "Department deleted successfully"}

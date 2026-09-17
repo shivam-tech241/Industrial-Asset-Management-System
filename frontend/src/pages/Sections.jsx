@@ -1,32 +1,37 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import DepartmentModal from '../components/DepartmentModal';
+import SectionModal from '../components/SectionModal';
 
-const Departments = () => {
+const Sections = () => {
   const { user } = useAuth();
+  const [sections, setSections] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
-  
-  // Department Modal state
+
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDept, setSelectedDept] = useState(null);
+  const [selectedSection, setSelectedSection] = useState(null);
 
   const isAdmin = user?.role_name === 'Admin';
 
-  const fetchDepartments = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await api.get('/departments');
-      setDepartments(response.data);
+      const [sectionsRes, deptsRes] = await Promise.all([
+        api.get('/sections'),
+        api.get('/departments'),
+      ]);
+      setSections(sectionsRes.data);
+      setDepartments(deptsRes.data);
     } catch (err) {
-      console.error('Failed to load departments', err);
+      console.error('Failed to load sections data', err);
       setError(
         err.response?.data?.detail ||
-        'Failed to load departments. Please check your network connection or verify your session.'
+        'Failed to load sections data. Please check your network connection or verify your session.'
       );
     } finally {
       setLoading(false);
@@ -34,37 +39,43 @@ const Departments = () => {
   }, []);
 
   useEffect(() => {
-    fetchDepartments();
-  }, [fetchDepartments]);
+    fetchData();
+  }, [fetchData]);
 
   const handleOpenCreateModal = () => {
     setActionError('');
-    setSelectedDept(null);
+    setSelectedSection(null);
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (dept) => {
+  const handleOpenEditModal = (section) => {
     setActionError('');
-    setSelectedDept(dept);
+    setSelectedSection(section);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (dept) => {
+  const handleDelete = async (section) => {
     setActionError('');
-    const confirmed = window.confirm(`Are you sure you want to delete department "${dept.name}"?`);
+    const confirmed = window.confirm(`Are you sure you want to delete section "${section.name}"?`);
     if (!confirmed) return;
 
     try {
-      await api.delete(`/departments/${dept.id}`);
-      await fetchDepartments();
+      await api.delete(`/sections/${section.id}`);
+      await fetchData();
     } catch (err) {
-      console.error('Failed to delete department', err);
+      console.error('Failed to delete section', err);
       setActionError(
         err.response?.data?.detail ||
-        'Failed to delete department. An unexpected error occurred.'
+        'Failed to delete section. An unexpected error occurred.'
       );
     }
   };
+
+  // Map department_id to department name
+  const departmentMap = departments.reduce((acc, dept) => {
+    acc[dept.id] = dept.name;
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-6">
@@ -72,10 +83,10 @@ const Departments = () => {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight font-sans">
-            Departments
+            Sections
           </h1>
           <p className="mt-2 text-gray-500 max-w-3xl">
-            Manage organizational plant divisions, operational departments, and team assignments.
+            Manage operational zones, production lines, and workstation sub-units within plant departments.
           </p>
         </div>
 
@@ -88,7 +99,7 @@ const Departments = () => {
               <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Add Department
+              Add Section
             </button>
           </div>
         )}
@@ -122,7 +133,7 @@ const Departments = () => {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <p className="text-sm font-medium">Loading departments...</p>
+            <p className="text-sm font-medium">Loading sections...</p>
           </div>
         ) : error ? (
           <div className="p-12 text-center">
@@ -134,19 +145,19 @@ const Departments = () => {
             <h3 className="text-base font-semibold text-gray-900">Failed to load data</h3>
             <p className="mt-1 text-sm text-gray-500">{error}</p>
             <button
-              onClick={fetchDepartments}
+              onClick={fetchData}
               className="mt-4 px-4 py-2 text-sm font-medium text-primary bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors cursor-pointer"
             >
               Retry
             </button>
           </div>
-        ) : departments.length === 0 ? (
+        ) : sections.length === 0 ? (
           <div className="border border-dashed border-gray-200 rounded-xl m-8 p-12 text-center text-gray-400">
             <svg className="mx-auto h-12 w-12 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <span className="block text-sm font-semibold text-gray-700">No departments found</span>
-            <p className="mt-1 text-xs text-gray-400">Click "Add Department" to register the first department.</p>
+            <span className="block text-sm font-semibold text-gray-700">No sections found</span>
+            <p className="mt-1 text-xs text-gray-400">Click "Add Section" to register the first section.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -156,29 +167,37 @@ const Departments = () => {
                   <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
+                  <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Department
+                  </th>
                   <th scope="col" className="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {departments.map((dept) => (
-                  <tr key={dept.id} className="hover:bg-gray-50 transition-colors duration-150">
+                {sections.map((section) => (
+                  <tr key={section.id} className="hover:bg-gray-50 transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-lg bg-primary-50 text-primary flex items-center justify-center mr-3 font-semibold text-xs">
-                          {dept.name.charAt(0).toUpperCase()}
+                          {section.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="text-sm font-semibold text-gray-900">
-                          {dept.name}
+                          {section.name}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        {departmentMap[section.department_id] || `Department #${section.department_id}`}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {isAdmin ? (
                         <div className="inline-flex items-center space-x-3">
                           <button
-                            onClick={() => handleOpenEditModal(dept)}
+                            onClick={() => handleOpenEditModal(section)}
                             className="text-primary hover:text-primary-hover font-semibold transition-colors cursor-pointer inline-flex items-center"
                           >
                             <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -188,7 +207,7 @@ const Departments = () => {
                           </button>
                           <span className="text-gray-300">|</span>
                           <button
-                            onClick={() => handleDelete(dept)}
+                            onClick={() => handleDelete(section)}
                             className="text-red-600 hover:text-red-800 font-semibold transition-colors cursor-pointer inline-flex items-center"
                           >
                             <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -209,15 +228,16 @@ const Departments = () => {
         )}
       </div>
 
-      {/* Modal for Add / Edit Department */}
-      <DepartmentModal
+      {/* Modal for Add / Edit */}
+      <SectionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchDepartments}
-        department={selectedDept}
+        onSuccess={fetchData}
+        section={selectedSection}
+        departments={departments}
       />
     </div>
   );
 };
 
-export default Departments;
+export default Sections;
