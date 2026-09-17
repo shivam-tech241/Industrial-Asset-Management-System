@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem('accessToken');
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
       setToken(storedToken);
@@ -18,15 +18,19 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (personalNo, password, roleId) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token: receivedToken, user: receivedUser } = response.data;
+      const response = await api.post('/auth/login', {
+        personal_no: personalNo,
+        password,
+        role_id: Number(roleId),
+      });
+      const { access_token: receivedToken, user: receivedUser } = response.data;
       
       setToken(receivedToken);
       setUser(receivedUser);
       
-      localStorage.setItem('token', receivedToken);
+      localStorage.setItem('accessToken', receivedToken);
       localStorage.setItem('user', JSON.stringify(receivedUser));
       
       return response.data;
@@ -39,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
   };
 

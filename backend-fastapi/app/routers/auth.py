@@ -33,6 +33,8 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         raise generic_error
 
     role_name = user.role.role_name if user.role else None
+    department_name = user.department.name if user.department else None
+
     token_payload = {
         "sub": str(user.id),
         "role": role_name,
@@ -40,10 +42,22 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
     }
     access_token = create_access_token(token_payload)
 
+    user_response = {
+        "id": user.id,
+        "personal_no": user.personal_no,
+        "name": user.name,
+        "email": user.email,
+        "role_id": user.role_id,
+        "department_id": user.department_id,
+        "role_name": role_name,
+        "department_name": department_name,
+        "created_at": user.created_at,
+    }
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": user,
+        "user": user_response,
     }
 
 

@@ -20,7 +20,7 @@ from app.schemas.fault_report import (
     FaultReportUpdate,
     FaultReportOut,
 )
-from app.schemas.auth import LoginRequest, Token
+from app.schemas.auth import LoginRequest, Token, LoginUserOut
 
 __all__ = [
     "RoleBase",
@@ -60,4 +60,5 @@ __all__ = [
     "FaultReportOut",
     "LoginRequest",
     "Token",
+    "LoginUserOut",
 ]

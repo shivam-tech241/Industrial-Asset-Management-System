@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import Assets from './pages/Assets';
 import Departments from './pages/Departments';
 import FaultReports from './pages/FaultReports';
+import MaintenanceLogs from './pages/MaintenanceLogs';
+import AssetCategories from './pages/AssetCategories';
 
 function App() {
   return (
@@ -30,7 +32,9 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="assets" element={<Assets />} />
+            <Route path="asset-categories" element={<AssetCategories />} />
             <Route path="departments" element={<Departments />} />
+            <Route path="maintenance-logs" element={<MaintenanceLogs />} />
             <Route path="fault-reports" element={<FaultReports />} />
           </Route>
 

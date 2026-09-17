@@ -1,27 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [personalNo, setPersonalNo] = useState('');
   const [password, setPassword] = useState('');
+  const [roles, setRoles] = useState([]);
+  const [selectedRoleId, setSelectedRoleId] = useState('');
+  const [loadingRoles, setLoadingRoles] = useState(true);
+  const [rolesError, setRolesError] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        setLoadingRoles(true);
+        setRolesError('');
+        const response = await api.get('/roles');
+        setRoles(response.data);
+        if (response.data && response.data.length > 0) {
+          setSelectedRoleId(String(response.data[0].id));
+        }
+      } catch (err) {
+        console.error('Failed to load roles', err);
+        setRolesError('Failed to load roles from server.');
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    fetchRoles();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!selectedRoleId) {
+      setError('Please select a role.');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(personalNo, password, Number(selectedRoleId));
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
       setError(
-        err.response?.data?.message || 
+        err.response?.data?.detail || 
         'Failed to connect to server. Please check your credentials or verify that the backend is running.'
       );
     } finally {
@@ -65,19 +95,19 @@ const Login = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
+              <label htmlFor="personal-no" className="block text-sm font-medium text-gray-700 mb-1">
+                Personal No.
               </label>
               <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="personal-no"
+                name="personalNo"
+                type="text"
+                autoComplete="username"
                 required
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition-colors duration-150"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="e.g. EMP-ADMIN-001"
+                value={personalNo}
+                onChange={(e) => setPersonalNo(e.target.value)}
               />
             </div>
 
@@ -97,12 +127,44 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+
+            <div>
+              <label htmlFor="role-select" className="block text-sm font-medium text-gray-700 mb-1">
+                Role
+              </label>
+              {loadingRoles ? (
+                <div className="flex items-center text-sm text-gray-500 py-2">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Loading roles...
+                </div>
+              ) : rolesError ? (
+                <div className="text-sm text-red-600 py-1">{rolesError}</div>
+              ) : (
+                <select
+                  id="role-select"
+                  name="roleId"
+                  required
+                  className="appearance-none relative block w-full px-3 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition-colors duration-150 bg-white"
+                  value={selectedRoleId}
+                  onChange={(e) => setSelectedRoleId(e.target.value)}
+                >
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.role_name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loadingRoles}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? (

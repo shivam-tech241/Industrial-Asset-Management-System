@@ -23,10 +23,10 @@ const Dashboard = () => {
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary-50 text-primary capitalize">
-            Role: {user?.role || 'Viewer'}
+            Role: {user?.role_name || user?.role || 'Viewer'}
           </span>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-            Department ID: {user?.department_id || 'N/A'}
+            Department: {user?.department_name ? `${user.department_name} (ID: ${user?.department_id})` : (user?.department_id ? `ID: ${user?.department_id}` : 'N/A')}
           </span>
         </div>
       </div>

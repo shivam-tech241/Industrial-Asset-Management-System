@@ -6,10 +6,36 @@ const Layout = () => {
   const { user, logout } = useAuth();
 
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z' },
-    { name: 'Assets', path: '/assets', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-    { name: 'Departments', path: '/departments', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-    { name: 'Fault Reports', path: '/fault-reports', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
+    {
+      name: 'Dashboard',
+      path: '/dashboard',
+      icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z',
+    },
+    {
+      name: 'Assets',
+      path: '/assets',
+      icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+    },
+    {
+      name: 'Asset Categories',
+      path: '/asset-categories',
+      icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
+    },
+    {
+      name: 'Departments',
+      path: '/departments',
+      icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+    },
+    {
+      name: 'Maintenance Logs',
+      path: '/maintenance-logs',
+      icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
+    },
+    {
+      name: 'Fault Reports',
+      path: '/fault-reports',
+      icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+    },
   ];
 
   return (
@@ -56,7 +82,10 @@ const Layout = () => {
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-semibold text-gray-800 truncate">{user?.name || 'User'}</p>
-              <p className="text-xs text-gray-500 capitalize truncate">{user?.role || 'Staff'}</p>
+              <p className="text-xs text-gray-500 capitalize truncate">
+                {user?.role_name || user?.role || 'Staff'}
+                {user?.department_name ? ` • ${user.department_name}` : ''}
+              </p>
             </div>
           </div>
         </div>
@@ -75,7 +104,9 @@ const Layout = () => {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Logged in as</span>
-              <span className="text-sm font-medium text-gray-700">{user?.name} ({user?.role})</span>
+              <span className="text-sm font-medium text-gray-700">
+                {user?.name} ({user?.role_name || user?.role || 'User'})
+              </span>
             </div>
 
             <button
