@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -8,7 +9,7 @@ from app.models.department import Department
 from app.schemas.auth import LoginRequest, Token
 from app.schemas.user import UserCreate, UserOut
 from app.auth.security import verify_password, hash_password, create_access_token
-from app.auth.dependencies import require_role
+from app.auth.dependencies import get_current_user, require_role
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 users_router = APIRouter(prefix="/users", tags=["users"])
@@ -59,6 +60,14 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user": user_response,
     }
+
+
+@users_router.get("", response_model=List[UserOut])
+def get_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return db.query(User).all()
 
 
 @users_router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED)

@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
 from app.models.maintenance_log import MaintenanceLog, MaintenanceStatus
@@ -140,6 +141,13 @@ def delete_maintenance_log(
             detail="Maintenance log not found",
         )
 
-    db.delete(log)
-    db.commit()
+    try:
+        db.delete(log)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete maintenance log because related records exist.",
+        )
     return {"message": "Maintenance log deleted successfully"}
