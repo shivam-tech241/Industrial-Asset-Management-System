@@ -18,3 +18,7 @@ class User(Base):
 
     role = relationship("Role", backref="users")
     department = relationship("Department", backref="users")
+
+    @property
+    def role_name(self):
+        return self.role.role_name if self.role else None

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 
 const STATUS_OPTIONS = ['Pending', 'In Progress', 'Completed'];
@@ -22,6 +22,7 @@ const MaintenanceLogModal = ({
   // Reference data
   const [assets, setAssets] = useState(passedAssets || []);
   const [users, setUsers] = useState(passedUsers || []);
+  const [roles, setRoles] = useState([]);
   const [loadingRefs, setLoadingRefs] = useState(false);
 
   const [error, setError] = useState('');
@@ -49,9 +50,12 @@ const MaintenanceLogModal = ({
           promises.push(Promise.resolve({ data: passedUsers }));
         }
 
-        const [assetsRes, usersRes] = await Promise.all(promises);
+        promises.push(api.get('/roles'));
+
+        const [assetsRes, usersRes, rolesRes] = await Promise.all(promises);
         setAssets(assetsRes.data);
         setUsers(usersRes.data);
+        if (rolesRes?.data) setRoles(rolesRes.data);
       } catch (err) {
         console.error('Failed to load maintenance log reference data in modal', err);
       } finally {
@@ -86,6 +90,21 @@ const MaintenanceLogModal = ({
       setError('');
     }
   }, [isOpen, log]);
+
+  // Filter eligible performers to Admin and Technician only (excluding Viewers)
+  const eligibleUsers = useMemo(() => {
+    const roleMap = roles.reduce((acc, r) => {
+      acc[r.id] = r.role_name;
+      return acc;
+    }, {});
+
+    return users.filter((u) => {
+      const roleName = u.role_name || roleMap[u.role_id];
+      const isEligible = roleName === 'Admin' || roleName === 'Technician';
+      const isCurrentPerformer = log && String(u.id) === String(log.performed_by);
+      return isEligible || isCurrentPerformer;
+    });
+  }, [users, roles, log]);
 
   if (!isOpen) return null;
 
@@ -218,7 +237,7 @@ const MaintenanceLogModal = ({
                 className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="">Select User / Technician</option>
-                {users.map((u) => (
+                {eligibleUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name} ({u.personal_no})
                   </option>

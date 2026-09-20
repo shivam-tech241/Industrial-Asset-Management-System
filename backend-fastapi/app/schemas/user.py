@@ -24,6 +24,7 @@ class UserUpdate(BaseModel):
 
 class UserOut(UserBase):
     id: int
+    role_name: Optional[str] = None
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
